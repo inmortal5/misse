@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda Móvil Clon - Dark Mode Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* --- ESTILOS CSS BASE (DARK MODE) --- */
+        :root {
+            --color-primario: #00BCD4;   /* Cyan Brillante - Acciones principales y precios */
+            --color-secundario: #E91E63; /* Magenta - Descuentos y alertas */
+            --color-negro: #fcfcfc;      /* Texto principal (blanco para dark mode) */
+            --color-fondo-app: #121212;  /* Fondo muy oscuro, casi negro */
+            --color-gris-claro: #2c2c2c; /* Fondo de tarjetas y secciones */
+            --color-gris-medio: #9e9e9e; /* Texto secundario */
+            --color-alerta: #FF9800;     /* Naranja para stock/advertencias */
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;400;700;900&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif; }
+        body { background-color: var(--color-fondo-app); display: flex; justify-content: center; min-height: 100vh; color: var(--color-negro); }
+
+        .app-container {
+            width: 100%; max-width: 420px; background-color: var(--color-fondo-app); box-shadow: 0 0 25px rgba(0, 0, 0, 0.5); 
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        /* Contenedor de Vistas */
+        #main-app-content, #product-detail-view, #registration-view, #profile-view, #cart-view, #privacy-policy-view {
+            width: 100%; flex-grow: 1; background-color: var(--color-fondo-app); position: absolute; top: 0; left: 0; z-index: 20; 
+            overflow-y: auto; padding-bottom: 60px; display: none;
+        }
+        #main-app-content { display: flex; flex-direction: column; } 
+        
+        /* Flecha de retroceso más grande y fácil de tocar */
+        .view-header {
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 5px 10px; 
+            background-color: #1e1e1e; border-bottom: 1px solid #222; 
+        }
+        .view-header i.fa-arrow-left {
+            font-size: 20px; 
+            padding: 10px; 
+            cursor: pointer;
+            color: var(--color-primario);
+        }
+        .view-header h3 { 
+            flex-grow: 1;
+            text-align: center;
+            margin-right: 40px; 
+        }
+        
+        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; background-color: var(--color-fondo-app); border-bottom: 1px solid #222; }
+        .search-bar { flex-grow: 1; margin: 0 10px; position: relative; }
+        .search-bar input { 
+            width: 100%; padding: 10px 35px 10px 15px; border: 1px solid var(--color-gris-claro); 
+            border-radius: 25px; font-size: 14px; background-color: var(--color-gris-claro); 
+            color: var(--color-negro); transition: border-color 0.3s;
+        }
+
+        .category-menu { display: flex; overflow-x: auto; padding: 10px 10px; white-space: nowrap; background-color: var(--color-fondo-app); border-bottom: 1px solid #222; }
+        .category-menu div { 
+            padding: 6px 18px; font-size: 14px; font-weight: 500; color: var(--color-gris-medio); cursor: pointer; 
+            border-radius: 20px; transition: all 0.3s; margin-right: 8px; border: 1px solid transparent;
+        }
+        .category-menu div.active { 
+            background-color: var(--color-primario); 
+            color: var(--color-fondo-app); 
+            font-weight: bold;
+            border-color: var(--color-primario);
+        }
+
+        .main-banner { 
+            background: linear-gradient(135deg, #7A1FA2, var(--color-secundario)); 
+            color: #fff; padding: 30px 15px; text-align: center; 
+            border-radius: 0 0 20px 20px; 
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+        .main-banner h3 { 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 26px; 
+            font-weight: 900; 
+            text-transform: uppercase;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); 
+            line-height: 1.1;
+        }
+        .main-banner h3:first-child { 
+            font-size: 22px; 
+            color: #FFC107; 
+            margin-bottom: 5px;
+        }
+        .main-banner p { 
+            font-size: 13px; margin-top: 10px; font-weight: 400; opacity: 0.9; 
+        }
+
+        #side-menu {
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            width: 70%; 
+            max-width: 300px; 
+            height: 100%; 
+            background-color: #1e1e1e; 
+            z-index: 100; 
+            transform: translateX(-100%); 
+            transition: transform 0.3s; 
+            padding: 20px; 
+            box-shadow: 4px 0 10px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        #side-menu.open {
+            transform: translateX(0);
+        }
+        .menu-item {
+            padding: 12px 0;
+            font-size: 16px;
+            color: var(--color-negro);
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+            transition: color 0.2s;
+        }
+        .menu-item:last-of-type { border-bottom: none; }
+        .menu-item:hover {
+            color: var(--color-primario);
+        }
+
+        .info-bar { 
+            display: flex; justify-content: space-around; padding: 15px 0; 
+            background-color: var(--color-gris-claro); border-bottom: none; 
+        }
+        
+        .main-content { padding: 15px 10px 10px; overflow-y: auto; flex-grow: 1; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; } 
+        
+        /* TARJETA DE PRODUCTO */
+        .product-card { 
+            background-color: var(--color-gris-claro); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4); 
+            cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; 
+            border: 1px solid #3a3a3a;
+        }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6); background-color: #383838; }
+        .product-card img { width: 100%; height: auto; display: block; min-height: 100px; background-color: #1e1e1e; }
+        
+        /* Flash Sales */
+        .flash-liquidation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .flash-card { 
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--color-primario); 
+            background-color: var(--color-gris-claro);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* Footer Nav */
+        .footer-nav { 
+            display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #333; background-color: #1e1e1e; 
+            position: fixed; bottom: 0; width: 100%; max-width: 420px; z-index: 30; 
+        }
+        
+        /* --- ESTILOS DE DELE REVISADOS --- */
+        .detail-image-slider { 
+            position: relative; 
+            overflow: hidden;
+            height: 300px; 
+            background-color: var(--color-gris-claro); 
+        }
+        #slider-image-wrapper { 
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .detail-image-slider .slider-image {
+            width: 100%;
+            height: 100%; 
+            object-fit: contain; 
+            display: none;
+            transition: opacity 0.3s;
+        }
+        .detail-image-slider .slider-image.active {
+            display: block;
+        }
+        /* Estilos para botones de navegación del Slider */
+        .slider-nav-button, .slider-index {
+            position: absolute;
+            z-index: 25;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            border: none;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #slider-prev { left: 10px; }
+        #slider-next { right: 10px; }
+        .slider-index { 
+            bottom: 10px; 
+            top: auto;
+            right: 10px;
+            font-size: 12px;
+            padding: 3px 8px;
+            transform: none;
+        }
+        
+        /* Toast Message */
+        #app-toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: var(--color-primario);
+            color: #121212;
+            text-align: center;
+            border-radius: 25px;
+            padding: 10px 20px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 60px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.5s;
+            opacity: 0;
+        }
+        #app-toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Estilos para el formulario de registro (Inputs) */
+        #registration-form input, #registration-form textarea {
+            padding: 10px; 
+            border: 1px solid #444; 
+            border-radius: 5px; 
+            background-color: #333; 
+            color: white;
+            font-size: 14px;
+        }
+
+        /* --- FIX 1: Botón de Agregar al Carrito (Fixed Footer) --- */
+        .detail-info-footer {
+            position: fixed;
+            bottom: 48px; /* Altura de la barra de navegación principal */
+            width: 100%;
+            max-width: 420px;
+            background-color: #1e1e1e;
+            border-top: 1px solid #333;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 40; /* Mayor que el footer nav (30) */
+        }
+        .detail-info-footer .price-box span {
+            display: block;
+            text-align: right;
+            font-weight: bold;
+        }
+        .detail-info-footer .price-box #footer-old-price {
+            font-size: 12px;
+            color: var(--color-gris-medio);
+            text-decoration: line-through;
+        }
+        .detail-info-footer .price-box #footer-current-price {
+            font-size: 18px;
+            color: var(--color-primario);
+        }
+        .detail-info-footer .add-to-cart-btn {
+            background-color: var(--color-secundario);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            position: relative;
+            padding-right: 25px; /* space for discount tag */
+        }
+        .detail-info-footer .add-to-cart-btn .discount {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--color-primario);
+            color: var(--color-fondo-app);
+            font-size: 10px;
+            padding: 1px 5px;
+            border-radius: 10px;
+        }
+        /* --- FIN FIX 1 --- */
+
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div id="side-menu">
+            <div style="font-size: 20px; font-weight: bold; margin-bottom: 30px; color: var(--color-primario);">eCommerce App</div>
+            <div class="menu-item" onclick="handleMenuClick('main')"><i class="fa-solid fa-home" style="margin-right: 10px;"></i> Inicio</div>
+            <div class="menu-item" onclick="handleMenuClick('profile')"><i class="fa-solid fa-user-circle" style="margin-right: 10px;"></i> Mi Perfil</div>
+            <div class="menu-item" onclick="handleMenuClick('cart')"><i class="fa-solid fa-shopping-cart" style="margin-right: 10px;"></i> Carrito</div>
+            <div class="menu-item" onclick="handleMenuClick('support')"><i class="fa-solid fa-question-circle" style="margin-right: 10px;"></i> Soporte y Ayuda</div>
+            <div class="menu-item" onclick="handleMenuClick('privacy')"><i class="fa-solid fa-shield-alt" style="margin-right: 10px;"></i> Política de Privacidad</div>
+            <div class="menu-item" onclick="handleMenuClick('logout')" style="color: var(--color-secundario); margin-top: 30px;"><i class="fa-solid fa-sign-out-alt" style="margin-right: 10px;"></i> Cerrar Sesión (Simulado)</div>
+        </div>
+        <div id="menu-overlay" onclick="toggleSideMenu()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; max-width: 420px; background-color: rgba(0,0,0,0.7); z-index: 90; display: none;"></div>
+
+
+        <div id="main-app-content" style="display: flex;">
+            <header>
+                <div class="header-top">
+                    <i class="fa-solid fa-list icon-btn" onclick="toggleSideMenu()"></i>
+                    <div class="search-bar">
+                        <input type="text" id="search-input" placeholder="buscar mi producto" onkeyup="handleSearch()">
+                        <i class="fa-solid fa-search"></i>
+                    </div>
+                    <i class="fa-solid fa-camera icon-btn"></i>
+                </div>
+                <div class="category-menu" id="category-menu-top">
+                    <div data-category="all" class="active" onclick="filterByCategory('all', this)">Todos</div>
+                    <div data-category="juguetes" onclick="filterByCategory('juguetes', this)">Juguetes</div>
+                    <div data-category="moda" onclick="filterByCategory('moda', this)">Moda</div>
+                    <div data-category="tecnología" onclick="filterByCategory('tecnología', this)">Tecnología</div>
+                    <div data-category="hogar" onclick="filterByCategory('hogar', this)">Hogar</div>
+                </div>
+            </header>
+            <div class="main-banner">
+                <h3>⚡️ SUPERVENTAS FLASH ⚡️</h3>
+                <h3>HASTA 75% DE DESCUENTO</h3>
+                <p>ENVÍO GARANTIZADO | SÓLO PARA EL SALVADOR</p>
+            </div>
+            <div class="info-bar">
+                <div class="info-item"><i class="fa-solid fa-truck icon"></i><span>ENVÍO maximo 5 dias</span></div>
+                <div class="info-item"><i class="fa-solid fa-lock icon"></i><span>Garantía de entrega</span></div>
+            </div>
+            <div class="section-header-bar" id="category-menu-bottom">
+                <div class="section-header" data-category="juguetes" onclick="filterByCategory('juguetes', this)">
+                    <i class="fa-solid fa-gamepad"></i> Juguetes
+                </div>
+                <div class="section-header" data-category="herramientas" onclick="filterByCategory('herramientas', this)">
+                    <i class="fa-solid fa-wrench"></i> Herramientas
+                </div>
+            </div>
+            <main class="main-content">
+                <div id="product-list-container">
+                    <p id="no-results-message">No se encontraron productos que coincidan con su búsqueda.</p>
+                </div>
+            </main>
+        </div>
+
+
+        <div id="product-detail-view">
+            <div class="view-header">
+                <i class="fa-solid fa-arrow-left" id="back-to-main"></i>
+                <div><i class="fa-solid fa-share-alt"></i><i class="fa-solid fa-ellipsis-v" style="margin-left: 15px;"></i></div>
+            </div>
+            
+            <div class="detail-image-slider">
+                <button id="slider-prev" class="slider-nav-button"><i class="fa-solid fa-chevron-left"></i></button>
+                <button id="slider-next" class="slider-nav-button"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="slider-index" id="current-slider-index">1/4</div>
+                <div id="slider-image-wrapper">
+                    </div>
+            </div>
+            
+            <div class="detail-top-info-bar">
+                <div class="info-item"><i class="fa-solid fa-bolt"></i> POR TIEMPO LIMITADO</div>
+                <div class="info-item"><i class="fa-solid fa-check"></i> Envío maximo en 5 dias</div>
+            </div>
+            <div class="detail-price-section">
+                <div class="detail-price-row">
+                    <span class="detail-current-price" id="detail-current-price">$0.00</span>
+                    <span class="detail-old-price" id="detail-old-price">$0.00</span>
+                    <span class="detail-discount-tag" id="detail-discount-tag">0% DE DESCUENTO</span>
+                </div>
+                <div class="detail-subtitle">tiempo limitado</div>
+                <div class="detail-title" id="detail-product-title">Título</div>
+                <div class="rating-seller-info">
+                    <div><span style="color: gold;"><i class="fa-solid fa-star"></i> 4.8</span></div>
+                    <div><span id="detail-sales-count">855</span><span style="font-weight: bold;"> ventas ></span></div>
+                </div>
+            </div>
+            <div class="time-limited-offer">
+                Oferta | Termina en <span class="timer" id="detail-countdown-timer">00:00:00</span>
+                <div style="color: #ccc; margin-top: 5px;"> <span id="detail-monthly-payment"></span> </div>
+            </div>
+            
+            <div class="selection-section">
+                <div class="quantity-selector">
+                    <h4>Cantidad</h4>
+                    <div class="quantity-input-group">
+                        <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                        <input type="number" id="quantity-input" value="1" min="1" max="10" readonly>
+                        <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-mid-info-bar">
+                <div><i class="fa-solid fa-check"></i> Puerta a puerta <span style="font-weight: bold;">Envío maximo 5 dias </span></div>
+                <div><i class="fa-solid fa-check"></i> <i class="fa-solid fa-shield-alt" style="margin-left: 15px;"></i> </div>
+            </div>
+            <div class="detail-description-container">
+                <h4 style="font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">Descripción y Detalles</h4>
+                <div id="detail-long-description">Descripción larga...</div>
+            </div>
+
+            <div class="selection-section" id="similar-products-section" style="padding: 10px; border-bottom: 8px solid var(--color-fondo-app);">
+                <h4 style="font-size: 16px; margin-bottom: 10px;">Productos Similares Recomendados</h4>
+                <div class="product-grid" id="similar-products-container">
+                    </div>
+            </div>
+        </div>
+        
+        <div id="registration-view">
+            <div class="view-header"><i class="fa-solid fa-arrow-left" onclick="handleNavClick('main')"></i><h3>Registrarse</h3></div>
+            <div style="padding: 20px;">
+                <h2 style="margin-bottom: 10px;">Crea tu Cuenta</h2>
+                <p style="color: var(--color-gris-medio); margin-bottom: 20px;">*Todos los campos son obligatorios para el envío.</p>
+                <form id="registration-form" style="display: flex; flex-direction: column; gap: 15px;">
+                    <h4 style="color: var(--color-primario); margin-top: 10px;">Datos de Contacto:</h4>
+                    <input type="text" id="reg-name" placeholder="Nombre Completo" required>
+                    <input type="tel" id="reg-phone" placeholder="Número de Teléfono (Ej: 77778888)" required>
+                    <input type="email" id="reg-email" placeholder="Correo Electrónico (Para recuperar cuenta)" required>
+                    <input type="password" id="reg-password" placeholder="Contraseña (mín. 6 caracteres)" required>
+
+                    <h4 style="color: var(--color-primario); margin-top: 20px;">Datos de Dirección (Obligatorio para Envío):</h4>
+                    <input type="text" id="reg-department" placeholder="Departamento" required>
+                    <input type="text" id="reg-municipality" placeholder="Municipio" required>
+                    <input type="text" id="reg-colony" placeholder="Nombre de Colonia" required>
+                    <input type="text" id="reg-street" placeholder="Número de Calle / Pasaje (Si aplica)" required>
+                    <input type="text" id="reg-color" placeholder="Color de Casa / Edificio" required>
+                    <textarea id="reg-description" rows="3" placeholder="Descripción detallada de algo cerca (Ej: Frente a la escuela X)" required></textarea>
+
+                    <button type="submit" style="padding: 12px; background-color: var(--color-primario); color: #121212; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; margin-top: 20px;">Registrarse y Guardar Dirección</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="profile-view">
+            <div class="view-header"><i class="fa-solid fa-arrow-left" onclick="handleNavClick('main')"></i><h3>Mi Perfil</h3></div>
+            <div style="padding: 20px;">
+                <h2 style="margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">Información Personal</h2>
+                <div id="profile-details" style="display: flex; flex-direction: column; gap: 10px;">
+                    <p>Cargando información...</p>
+                </div>
+                <button onclick="logout()" style="margin-top: 30px; padding: 10px; background-color: var(--color-secundario); color: white; border: none; border-radius: 20px; cursor: pointer;">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <div id="cart-view">
+            <div class="view-header"><i class="fa-solid fa-arrow-left" onclick="handleNavClick('main')"></i><h3>Mi Carrito</h3></div>
+            <div style="padding: 20px;">
+                <h2 style="margin-bottom: 20px;">Artículos</h2>
+                <div id="cart-items-container" style="display: flex; flex-direction: column; gap: 15px;">
+                    </div>
+                <div id="cart-summary" style="margin-top: 30px; border-top: 1px solid #444; padding-top: 15px;">
+                    <p style="font-size: 18px; font-weight: bold;">Total: <span id="cart-total">$0.00</span></p>
+                    <button onclick="checkout()" style="margin-top: 15px; padding: 12px; background-color: var(--color-primario); color: #121212; border: none; border-radius: 25px; font-weight: bold; width: 100%; cursor: pointer;">Finalizar Compra por WhatsApp</button>
+                </div>
+                <p id="empty-cart-message" style="text-align: center; color: var(--color-gris-medio); display: none;">Tu carrito está vacío.</p>
+            </div>
+        </div>
+        
+        <div id="privacy-policy-view">
+             <div class="view-header"><i class="fa-solid fa-arrow-left" onclick="handleNavClick('main')"></i><h3>Política de Privacidad</h3></div>
+            <div style="padding: 20px; font-size: 14px; color: var(--color-gris-medio);">
+                <h2 style="color: var(--color-negro); margin-bottom: 10px;">Privacidad de Datos</h2>
+                <p>Política de Privacidad de la Aplicación Móvil (eCommerce App)
+​Esta política de privacidad describe cómo la aplicación móvil "eCommerce App" (en adelante, "la App") recopila, utiliza y protege su información.
+​1. Recopilación y Uso de Información
+​La App se distingue por su enfoque en la privacidad, utilizando principalmente el almacenamiento local en su dispositivo.
+​A. Información Recopilada Localmente
+​La siguiente información se recopila y se almacena exclusivamente en su dispositivo móvil (Local Storage) para mejorar su experiencia de usuario y facilitar las compras. Esta información no se transfiere a nuestros servidores ni es accedida por terceros, excepto cuando usted inicia activamente el proceso de compra por WhatsApp (ver Sección 1.C).
+​Datos de Carrito de Compras: Artículos seleccionados, cantidad y precios.
+​Datos de Perfil/Registro: Su nombre, número de teléfono, correo electrónico, y la dirección de envío detallada (Departamento, Municipio, Calle/Pasaje, Colonia, Color de Casa y Referencia).
+​Preferencias de Usuario: Su última categoría de producto vista para personalizar la visualización de productos.
+​B. Información Recopilada por Terceros (Anuncios)
+​La App contiene anuncios de terceros ("ads") que se utilizan para financiar el servicio. Los proveedores de estos anuncios pueden recopilar y utilizar datos no personales sobre sus interacciones con la App y otros sitios web para mostrarle publicidad relevante (publicidad basada en intereses).
+​Tipo de Datos Recopilados por Anunciantes: Identificadores únicos de dispositivo, ubicación general, e información sobre su actividad de navegación dentro y fuera de la App.
+​Propósito: Mostrar anuncios más relevantes para usted.
+​Control: Usted puede consultar la configuración de su dispositivo móvil para limitar el seguimiento de anuncios.
+​C. Compartir Información a Través de WhatsApp (Proceso de Compra)
+​El proceso de finalización de compra (checkout) en la App se realiza por medio de un enlace directo a la plataforma WhatsApp.
+​Al hacer clic en "Finalizar Compra por WhatsApp", la App genera automáticamente un mensaje que incluye el detalle de su pedido (productos y total) y la dirección de entrega que usted registró.
+​Usted es quien envía activamente esta información al número de soporte para concretar la transacción. La privacidad de esta comunicación se rige por las políticas de WhatsApp.
+​2. Seguridad de la Información
+​Dado que la información de registro y carrito se almacena localmente, la seguridad de sus datos depende en gran medida de la seguridad de su dispositivo.
+​Recomendación: Recomendamos encarecidamente proteger su dispositivo con contraseñas, PIN o biometría.
+​3. Retención de Datos
+​Los datos almacenados localmente se conservan hasta que usted:
+​Borre manualmente la información de Local Storage de su navegador o aplicación.
+​Desinstale la App, lo que generalmente elimina los datos locales.
+​Cierre sesión (logout), lo que elimina los datos de perfil registrados.
+​4. Cambios a Esta Política
+​Podemos actualizar nuestra Política de Privacidad ocasionalmente. Le notificaremos cualquier cambio publicando la nueva Política de Privacidad en esta página. Se recomienda revisar esta política periódicamente.
+​5. Contacto
+​Si tiene preguntas o necesita soporte, puede contactarnos a través del siguiente medio:
+​Correo Electrónico de Soporte: juamsteven503@gmail.com.</p>
+                <p style="margin-top: 15px; color: var(--color-secundario);">Al usar esta aplicación, acepta los términos y condiciones y nuestras politicas de privacidad.</p>
+            </div>
+        </div>
+
+
+        <footer class="footer-nav">
+            <a href="#" class="nav-item active" data-view="main" onclick="handleNavClick('main')"><i class="fa-solid fa-house"></i>Inicio</a>
+            <a href="#" class="nav-item" data-view="categories" onclick="handleNavClick('main')"><i class="fa-solid fa-table-cells"></i>Categorías</a>
+            <a href="#" class="nav-item" data-view="profile" id="nav-profile-link" onclick="handleNavClick('profile')"><i class="fa-solid fa-user-circle"></i>Tú</a>
+            <a href="#" class="nav-item" data-view="cart" onclick="handleNavClick('cart')">
+                <div class="cart-icon-wrapper">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="cart-count" id="cart-count-badge">0</span>
+                </div>
+                Carrito
+            </a>
+        </footer>
+        
+        <div class="detail-info-footer" id="detail-footer" style="display: none;">
+            <div class="price-box">
+                <span id="footer-old-price">$0.00</span>
+                <span id="footer-current-price">$0.00</span>
+            </div>
+            <button class="add-to-cart-btn" onclick="addToCart()">
+                <span class="discount" id="footer-discount-tag">0% ¡AHORA!</span>
+                ¡Agrega al carrito!
+            </button>
+        </div>
+
+        <div id="app-toast"></div>
+
+    </div>
+
+    <script>
+        // --- 1. BASE DE DATOS DE PRODUCTOS ---
+        const PRODUCT_DATA = [
+            {
+                id: 1,
+                title: "Taladro inalambrico ⅜",
+                price: 50.00, oldPrice: 55.00, discount: 9.09, sales: '4.2K+', monthlyPayment: '',
+                longDescription: `<p>Taladro Atornillador Inalámbrico INGCO de 12V 🚀
+​¡La herramienta que estabas buscando para tus proyectos en casa o en el trabajo, ahora a un precio increíble! Olvídate de los cables y disfruta de la potencia compacta y la calidad que solo INGCO te ofrece.
+​✅ Lo que incluye y lo hace IMBATIBLE:
+​1 Batería de 12V recargable para trabajar sin interrupciones.
+​1 Cargador rápido para tener la herramienta lista cuando la necesites.
+​Potente Motor de 20Nm de Torque: Ideal para atornillar y perforar con eficiencia en madera, metal y plástico.
+​Calidad Garantizada: Confianza y durabilidad en cada uso... Categoría: **herramientas**.+Para trabajo" alt="taladro"><p>Características clave: . 3/8 </p>`,
+                images: ["https://i.ibb.co/fYFTpkQk/1762999635170-2.jpg",],
+                categories: ['herramientas',] 
+            },
+            {
+                id: 2,
+                title: "Cable de cargador tipo c",
+                price: 1.00, oldPrice: 5.00, discount: 80, sales: '12K+', monthlyPayment: '$4.20 por plazo',
+                longDescription: `<p>Cable USB Tipo C a USB Tipo C (macho a macho). Este accesorio sirve para cargar la batería y transferir datos entre teléfonos, tabletas y otros dispositivos con puerto USB-C. Soporta carga rápida.. Categoría: **Tecnología**.</p> =cable+tipo c+telefonos" alt="cargador"><p>usb</p>`,
+                images: ["https://i.ibb.co/hRhZLQNX/1762565941532-2.jpg", "https://i.ibb.co/LdsdrpsK/1762565955952.png", ],
+                categories: ['tecnología']
+            },
+            {
+                id: 3,
+                title: "Katana para costplay",
+                price: 29.99, oldPrice: 60.00, discount: 50, sales: '855', monthlyPayment: '$0.45 por plazo',
+                longDescription: "Katana de costplay roja y negro echa de hierro ,katana sin filo con funda negra me didas : oja 55 cm , espada completa con el mango 70 cm ,objeto seguro sin filo peligroso para menores objeto puntiagudo. Categoría: **juguetes**.",
+                images: ["https://i.ibb.co/5hSZNhmz/1762649958503.png", "https://i.ibb.co/4Z1ZVm4B/1762650222992.png", "https://i.ibb.co/nswKrL84/1762650292641.png"],
+                categories: ['juguetes']
+            },
+            {
+                id: 4,
+                title: "Elicoptero a control remoto",
+                price: 10.00, oldPrice: 20.00, discount: 50, sales: '8.5K+', monthlyPayment: '$1.15 por plazo',
+                longDescription: " elicptero a control remto . Categoría: **Juguetes**.",
+                images: ["https://i.ibb.co/212FVycv/1762778860711-2.jpg", "https://i.ibb.co/kgpw0pnV/1762656542021-2.jpg", "https://i.ibb.co/qMmkVK3N/1762656590434-2.jpg"],
+                categories: ['juguetes', 'moda'] 
+            },
+            {
+                id: 5,
+                title: "4 Anclas de ⅜",
+                price: 0.25, oldPrice: 1.00, discount: 75, sales: '1.2K+', monthlyPayment: '$1.30 por plazo',
+                longDescription: "Ideal para estantes. . Disponibles 4 . Categoría: **Hogar**.",
+                images: ["https://i.ibb.co/C3ycqTnz/1762653870714-2.jpg", "https://i.ibb.co/TXggYjF/1762653931546-2.jpg"],
+                categories: ['hogar', 'herramientas']
+            },
+            {
+                id: 6,
+                title: "Maquina de coser",
+                price: 35.00, oldPrice: 38.00, discount: 3, sales: '22K+', monthlyPayment: '$0.40 por plazo',
+                images: ["https://i.ibb.co/fGNv74Lj/1763001380776-2.jpg", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Cable+USB+Conector", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Cable+USB+Empaque", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Cable+USB+Colores"],
+                categories: ['tecnología']
+            },
+            {
+                id: 7,
+                title: "Cargador para computadora",
+                price: 35.99, oldPrice: 50.00, discount: 28, sales: '1.5K+', monthlyPayment: '$3.15 por plazo',
+                images: ["https://i.ibb.co/21RJLpFJ/1762779386133-2.jpg", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Destornillador+Kit", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Destornillador+Carga", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Destornillador+Uso"],
+                categories: ['herramientas', 'hogar']
+            },
+            {
+                id: 8,
+                title: "Mini refrijeradora",
+                price: 29.99, oldPrice: 35.00, discount: 26, sales: '3.1K+', monthlyPayment: '$1.60 por plazo',
+                images: ["https://i.ibb.co/WvjXtJ6L/1763038589266-2.jpg", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Sudadera+Detalle", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Sudadera+Modelo", "https://via.placeholder.com/420x300/2c2c2c/00BCD4?text=Sudadera+Etiqueta"],
+                categories: ['moda']
+            },
+        ];
+
+        // --- 2. VARIABLES GLOBALES ---
+        const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
+        
+        // Contenedores de vistas y elementos principales
+        const mainAppContent = document.getElementById('main-app-content');
+        const productDetailView = document.getElementById('product-detail-view');
+        const registrationView = document.getElementById('registration-view');
+        const profileView = document.getElementById('profile-view');
+        const cartView = document.getElementById('cart-view');
+        const privacyPolicyView = document.getElementById('privacy-policy-view'); 
+        const detailFooter = document.getElementById('detail-footer');
+        const sideMenu = document.getElementById('side-menu'); 
+        const menuOverlay = document.getElementById('menu-overlay'); 
+
+        // Elementos de slider (definidos globalmente)
+        const sliderPrevBtn = document.getElementById('slider-prev');
+        const sliderNextBtn = document.getElementById('slider-next');
+
+
+        // Variables de estado
+        let recentProducts = []; 
+        let cart = []; // Array que almacena los items del carrito {id, title, price, image, quantity}
+        let currentProductId = null; 
+        const WHATSAPP_NUMBER = "50375573427"; 
+        let currentCategoryFilter = 'all'; 
+        let countdownInterval;
+        let currentImageIndex = 0;
+        let sliderImageElements = [];
+
+
+        // --- FUNCIONES DE PERSISTENCIA (CART & RECENT PRODUCTS) ---
+
+        function saveCart() {
+            localStorage.setItem('shoppingCart', JSON.stringify(cart));
+        }
+
+        function loadCart() {
+            const savedCart = localStorage.getItem('shoppingCart');
+            cart = savedCart ? JSON.parse(savedCart) : [];
+            updateCartBadge();
+        }
+
+        function updateCartBadge() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count-badge').textContent = totalItems;
+        }
+
+        function loadRecentProducts() {
+            const savedProducts = localStorage.getItem('recentProducts');
+            if (savedProducts) {
+                const savedIds = JSON.parse(savedProducts);
+                recentProducts = savedIds.map(id => PRODUCT_DATA.find(p => p.id === id)).filter(p => p !== undefined);
+            }
+        }
+        function saveRecentProducts() {
+            const productIds = recentProducts.map(p => p.id);
+            localStorage.setItem('recentProducts', JSON.stringify(productIds));
+        }
+        // --- FIN PERSISTENCIA ---
+
+
+        // --- 3. LÓGICA DE VISTAS Y NAVEGACIÓN ---
+
+        function showToast(message) {
+            const toast = document.getElementById('app-toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function hideAllViews() {
+            mainAppContent.style.display = 'none';
+            productDetailView.style.display = 'none';
+            registrationView.style.display = 'none';
+            profileView.style.display = 'none';
+            cartView.style.display = 'none';
+            privacyPolicyView.style.display = 'none'; 
+            detailFooter.style.display = 'none'; // Asegura que el footer de detalle se oculte
+            
+            sideMenu.classList.remove('open');
+            menuOverlay.style.display = 'none';
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            document.querySelectorAll('.footer-nav .nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+        
+        window.handleNavClick = function(viewName) {
+            hideAllViews();
+            
+            const navItem = document.querySelector(`.footer-nav a[data-view="${viewName}"]`);
+            if (navItem) { navItem.classList.add('active'); }
+
+            if (viewName === 'main' || viewName === 'categories' || viewName === 'shipping') {
+                mainAppContent.style.display = 'flex';
+                filterByCategory(currentCategoryFilter, null, true); 
+            } else if (viewName === 'profile') {
+                const userData = localStorage.getItem('userProfileData');
+                if (userData) { showProfilePage(); } else { showRegistrationForm(); }
+            } else if (viewName === 'cart') {
+                showCartView();
+            }
+        }
+        
+        window.toggleSideMenu = function() {
+            const isMenuOpen = sideMenu.classList.contains('open');
+            sideMenu.classList.toggle('open', !isMenuOpen);
+            menuOverlay.style.display = isMenuOpen ? 'none' : 'block';
+        }
+
+        window.handleMenuClick = function(action) {
+            toggleSideMenu(); // Cerrar el menú
+            
+            if (action === 'main') {
+                handleNavClick('main');
+            } else if (action === 'profile') {
+                handleNavClick('profile'); 
+            } else if (action === 'cart') {
+                handleNavClick('cart'); 
+            } else if (action === 'support') {
+                const emailAddress = "juamsteven503@gmail.com";
+                window.location.href = `mailto:${emailAddress}?subject=Solicitud de Soporte desde la App Móvil`;
+            } else if (action === 'privacy') {
+                hideAllViews();
+                privacyPolicyView.style.display = 'block';
+            } else if (action === 'logout') {
+                 logout(); // Usar la función de logout real
+            }
+        }
+        // --- FIN LÓGICA DE VISTAS ---
+
+
+        // --- 4. LÓGICA DE FILTRADO Y PRODUCTOS ---
+        const productListContainer = document.getElementById('product-list-container');
+        const noResultsMessage = document.getElementById('no-results-message');
+
+        function createProductCardHTML(product) {
+            return `
+                <div class="product-card product-link" data-product-id="${product.id}">
+                    <img src="${product.images[0]}" alt="${product.title}">
+                    <div class="product-details">
+                        <p>${product.title.substring(0, 30)}...</p>
+                        <div style="font-size: 10px; color: gold;">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                            <span style="color: var(--color-gris-medio); margin-left: 5px;">${product.sales} ventas</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">${formatCurrency(product.price)}</span>
+                            <span class="old-price">${formatCurrency(product.oldPrice)}</span>
+                        </div>
+                        <div class="tag-black-friday">oferta</div>
+                        ${product.id === 4 ? '<span class="free-shipping-tag">Envío gratis</span>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getPersonalizedProducts(products, preferredCategory) {
+            if (!preferredCategory || preferredCategory === 'all') return products;
+
+            preferredCategory = preferredCategory.toLowerCase();
+            
+            const preferredProducts = products.filter(p => p.categories && p.categories.includes(preferredCategory));
+            const otherProducts = products.filter(p => !p.categories || !p.categories.includes(preferredCategory));
+            
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            const shuffledPreferred = shuffle(preferredProducts);
+            const shuffledOther = shuffle(otherProducts);
+
+            const finalPersonalizedList = [];
+            let pIndex = 0; 
+            let oIndex = 0; 
+            const ratio = 2; 
+            
+            while (pIndex < shuffledPreferred.length || oIndex < shuffledOther.length) {
+                for (let i = 0; i < ratio && pIndex < shuffledPreferred.length; i++) {
+                    finalPersonalizedList.push(shuffledPreferred[pIndex++]);
+                }
+                if (oIndex < shuffledOther.length) {
+                    finalPersonalizedList.push(shuffledOther[oIndex++]);
+                }
+            }
+
+            return finalPersonalizedList;
+        }
+        
+        function renderProducts(productsToRender) {
+            productListContainer.innerHTML = '';
+            
+            let finalProducts = productsToRender;
+            const isSearching = document.getElementById('search-input').value.trim() !== '';
+
+            if (!isSearching && currentCategoryFilter === 'all') {
+                 const preferredCategory = localStorage.getItem('userLastViewedCategory');
+                 finalProducts = getPersonalizedProducts(productsToRender, preferredCategory);
+            }
+
+            if (finalProducts.length === 0) { 
+                noResultsMessage.style.display = 'block'; 
+                return; 
+            } else { 
+                noResultsMessage.style.display = 'none'; 
+            }
+            
+            if (!isSearching && currentCategoryFilter === 'all') { 
+                
+                const flashSalePool = PRODUCT_DATA.filter(p => p.discount >= 50).slice(0, 5);
+                const randomIndex = Math.floor(Math.random() * flashSalePool.length);
+                const flashProduct = flashSalePool[randomIndex] || PRODUCT_DATA.find(p => p.id === 5); 
+                
+                const liquidProduct = PRODUCT_DATA.find(p => p.id === 2); 
+                
+                const randomMiniGridProducts = [...PRODUCT_DATA].sort(() => 0.5 - Math.random()).slice(0, 6);
+
+
+                const staticContent = `
+                    <div class="flash-liquidation">
+                        <div class="flash-card por tiempo limitado product-link" data-product-id="${flashProduct.id}">
+                            <h4 class="section-header" style="color: var(--color-primario); font-size: 14px; margin-bottom: 5px;"><i class="fa-solid fa-bolt"></i> por tiempo limitado ></h4>
+                            <div class="stock-tag" id="flash-stock-1">SOLO QUEDA (N) ${Math.floor(Math.random() * 10) + 3}</div>
+                            <img src="${flashProduct.images[0]}" alt="${flashProduct.title}" style="height: 120px; object-fit: cover;">
+                            <div class="price-row">
+                                <span class="new">${formatCurrency(flashProduct.price)}</span>
+                                <span class="old">${formatCurrency(flashProduct.oldPrice)}</span>
+                            </div>
+                        </div>
+                        <div class="flash-card liquidation-card product-link" data-product-id="${liquidProduct.id}">
+                            <h4 class="section-header" style="color: var(--color-primario); font-size: 14px; margin-bottom: 5px;"><i class="fa-solid fa-fire"></i> Ofertas de liquidación ></h4>
+                            <div class="product-mini-grid" style="display: flex; gap: 5px; justify-content: center;">
+                                ${randomMiniGridProducts.map(p => `<img src="${p.images[0]}" alt="Mini" style="width: 30px; height: 30px; object-fit: cover;">`).join('')}
+                            </div>
+                            <div class="stock-tag" id="flash-stock-2">SOLO QUEDA (N) ${Math.floor(Math.random() * 5) + 1}</div>
+                            <div class="price-row">
+                                <span class="new">${formatCurrency(liquidProduct.price)}</span>
+                                <span class="old">${formatCurrency(liquidProduct.oldPrice)}</span>
+                                <span style="color: var(--color-primario); font-size: 12px; margin-left: 5px;">${liquidProduct.discount}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productListContainer.insertAdjacentHTML('beforeend', staticContent);
+            }
+
+            let productGridHTML = finalProducts.map(createProductCardHTML).join('');
+            productListContainer.insertAdjacentHTML('beforeend', `<div class="product-grid">${productGridHTML}</div>`);
+            document.querySelectorAll('.product-link').forEach(link => { link.removeEventListener('click', showProductDetail); link.addEventListener('click', showProductDetail); });
+        }
+
+        window.filterByCategory = function(keyword, clickedElement = null, skipHighlight = false) {
+            const normalizedKeyword = keyword.toLowerCase();
+            currentCategoryFilter = normalizedKeyword; 
+            
+            document.querySelectorAll('.category-menu div, .section-header-bar div').forEach(el => el.classList.remove('active'));
+
+            if (!skipHighlight) {
+                document.querySelectorAll(`[data-category="${normalizedKeyword}"]`).forEach(el => el.classList.add('active'));
+            }
+
+            let filteredProducts;
+            if (normalizedKeyword === 'all') {
+                filteredProducts = PRODUCT_DATA;
+            } else {
+                filteredProducts = PRODUCT_DATA.filter(product => {
+                    return product.categories && product.categories.includes(normalizedKeyword);
+                });
+            }
+            
+            document.getElementById('search-input').value = ''; 
+
+            renderProducts(filteredProducts);
+            mainAppContent.scrollTop = 0; 
+            
+            if (clickedElement && normalizedKeyword !== 'all') {
+                const categoryText = clickedElement.textContent.trim().split(/\s+/).pop();
+                showToast(`✅ Filtro aplicado: ${categoryText}`);
+            }
+        }
+        window.handleSearch = function() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filteredProducts = PRODUCT_DATA.filter(product => 
+                product.title.toLowerCase().includes(query) || 
+                (product.longDescription && product.longDescription.toLowerCase().includes(query))
+            );
+            renderProducts(filteredProducts);
+        }
+        // --- FIN LÓGICA DE FILTRADO ---
+
+
+        // --- 5. LÓGICA DE DETALLE Y CARRITO ---
+        
+        window.changeQuantity = function(delta) {
+            const input = document.getElementById('quantity-input');
+            let quantity = parseInt(input.value);
+            quantity += delta;
+            if (quantity < 1) quantity = 1;
+            if (quantity > 10) quantity = 10;
+            input.value = quantity;
+        }
+
+        function startCountdownTimer(hours) {
+            // Lógica de contador simple para simular urgencia
+            if (countdownInterval) { clearInterval(countdownInterval); }
+            let totalSeconds = hours * 3600;
+            const timerDisplay = document.getElementById('detail-countdown-timer');
+
+            function updateTimer() {
+                const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+                const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+                const s = String(totalSeconds % 60).padStart(2, '0');
+                
+                timerDisplay.textContent = `${h}:${m}:${s}`;
+                
+                if (totalSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    timerDisplay.textContent = "¡Tiempo terminado!";
+                }
+                totalSeconds--;
+            }
+
+            updateTimer();
+            countdownInterval = setInterval(updateTimer, 1000);
+        }
+
+        function renderSimilarProducts(currentProduct) {
+            const similarContainer = document.getElementById('similar-products-container');
+            similarContainer.innerHTML = '';
+            
+            const category = currentProduct.categories ? currentProduct.categories[0] : 'all';
+            const similarProducts = PRODUCT_DATA.filter(p => 
+                p.id !== currentProduct.id && p.categories && p.categories.includes(category)
+            ).sort(() => 0.5 - Math.random()).slice(0, 4);
+
+            if (similarProducts.length > 0) {
+                document.getElementById('similar-products-section').style.display = 'block';
+                similarProducts.forEach(product => {
+                    similarContainer.insertAdjacentHTML('beforeend', createProductCardHTML(product));
+                });
+
+                // --- FIX 2: Añadir listener a los productos similares recién renderizados ---
+                similarContainer.querySelectorAll('.product-link').forEach(link => {
+                    // Quitamos listeners anteriores para evitar duplicados si la función se llama varias veces
+                    link.removeEventListener('click', showProductDetail); 
+                    link.addEventListener('click', showProductDetail); 
+                });
+                // --- FIN FIX 2 ---
+
+            } else {
+                 document.getElementById('similar-products-section').style.display = 'none';
+            }
+        }
+        
+        function buildSlider(imageUrls) {
+            const sliderImageWrapper = document.getElementById('slider-image-wrapper');
+            sliderImageWrapper.innerHTML = ''; 
+            sliderImageElements = []; 
+            
+            imageUrls.forEach((url, index) => {
+                const img = document.createElement('img'); 
+                img.src = url; 
+                img.alt = `Imagen de Producto ${index + 1}`;
+                img.className = 'slider-image'; 
+                sliderImageWrapper.appendChild(img); 
+                sliderImageElements.push(img);
+            });
+            currentImageIndex = 0; 
+            showSliderImage(0);
+        }
+        
+        function showSliderImage(index) {
+            if (sliderImageElements.length === 0) return;
+            // Lógica circular corregida
+            let newIndex = index % sliderImageElements.length; 
+            if (newIndex < 0) newIndex = sliderImageElements.length - 1; 
+
+            sliderImageElements.forEach((img, i) => { img.classList.toggle('active', i === newIndex); });
+            document.getElementById('current-slider-index').textContent = `${newIndex + 1}/${sliderImageElements.length}`;
+            currentImageIndex = newIndex;
+        }
+
+
+        window.showProductDetail = function(event) {
+            event.preventDefault();
+            const productId = parseInt(event.currentTarget.getAttribute('data-product-id'));
+            currentProductId = productId; 
+            const product = PRODUCT_DATA.find(p => p.id === productId);
+            if (!product) { 
+                showToast("❌ Error: Producto no encontrado."); 
+                return; 
+            }
+            
+            if (product.categories && product.categories.length > 0) {
+                 const primaryCategory = product.categories[0]; 
+                 localStorage.setItem('userLastViewedCategory', primaryCategory); 
+            }
+            
+            const existingIndex = recentProducts.findIndex(p => p.id === product.id);
+            if (existingIndex !== -1) { 
+                recentProducts.splice(existingIndex, 1); 
+            }
+            recentProducts.unshift(product);
+            if (recentProducts.length > 5) { 
+                recentProducts = recentProducts.slice(0, 5); 
+            }
+            saveRecentProducts(); 
+
+            hideAllViews();
+            productDetailView.style.display = 'block';
+            detailFooter.style.display = 'flex'; // Muestra el footer de detalle
+            productDetailView.scrollTop = 0;
+
+            const discountText = `${product.discount}% DE DESCUENTO`;
+            const currentPriceText = formatCurrency(product.price);
+            const oldPriceText = formatCurrency(product.oldPrice);
+
+            document.getElementById('detail-product-title').textContent = product.title;
+            document.getElementById('detail-current-price').textContent = currentPriceText;
+            document.getElementById('detail-old-price').textContent = oldPriceText;
+            document.getElementById('detail-discount-tag').textContent = discountText;
+            document.getElementById('detail-sales-count').textContent = product.sales;
+            document.getElementById('detail-monthly-payment').textContent = product.monthlyPayment;
+            document.getElementById('detail-long-description').innerHTML = product.longDescription || "No hay descripción disponible.";
+            document.getElementById('footer-current-price').textContent = currentPriceText;
+            document.getElementById('footer-old-price').textContent = oldPriceText;
+            document.getElementById('footer-discount-tag').textContent = `${product.discount}% ¡AHORA!`;
+            document.getElementById('quantity-input').value = 1; 
+            buildSlider(product.images); 
+
+            startCountdownTimer(4); 
+            renderSimilarProducts(product); 
+        }
+
+        /**
+         * Lógica de añadir al carrito
+         */
+        window.addToCart = function() {
+            if (!currentProductId) {
+                showToast("❌ Error: No hay producto seleccionado.");
+                return;
+            }
+
+            const product = PRODUCT_DATA.find(p => p.id === currentProductId);
+            const quantity = parseInt(document.getElementById('quantity-input').value) || 1;
+            
+            if (!product) {
+                showToast("❌ Error al encontrar el producto.");
+                return;
+            }
+
+            // Buscar si ya existe en el carrito
+            const existingItemIndex = cart.findIndex(item => item.id === product.id);
+
+            if (existingItemIndex > -1) {
+                // Si existe, incrementar cantidad
+                cart[existingItemIndex].quantity += quantity;
+            } else {
+                // Si no existe, añadir al carrito
+                cart.push({
+                    id: product.id,
+                    title: product.title,
+                    price: product.price,
+                    image: product.images[0],
+                    quantity: quantity
+                });
+            }
+
+            saveCart();
+            updateCartBadge();
+            showToast(`✅ ¡${quantity} unidad(es) de ${product.title.substring(0, 20)}... agregado(s)!`);
+        }
+
+        // --- 6. LÓGICA DEL CARRITO (Render/Checkout) ---
+
+        function showCartView() {
+            hideAllViews();
+            cartView.style.display = 'block';
+            renderCartItems();
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            const totalElement = document.getElementById('cart-total');
+            const emptyMessage = document.getElementById('empty-cart-message');
+            
+            container.innerHTML = '';
+            let totalPedido = 0;
+
+            if (cart.length === 0) {
+                emptyMessage.style.display = 'block';
+                totalElement.textContent = formatCurrency(0);
+                return;
+            }
+            emptyMessage.style.display = 'none';
+
+            cart.forEach(item => {
+                const subtotal = item.price * item.quantity;
+                totalPedido += subtotal;
+                
+                const itemHTML = `
+                    <div style="display: flex; gap: 10px; border-bottom: 1px solid #444; padding-bottom: 10px; align-items: center;">
+                        <img src="${item.image}" alt="${item.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; background-color: #333;">
+                        <div style="flex-grow: 1;">
+                            <p style="font-size: 14px; font-weight: bold;">${item.title.substring(0, 40)}...</p>
+                            <p style="font-size: 12px; color: var(--color-gris-medio);">Cantidad: ${item.quantity} | Precio: ${formatCurrency(item.price)}</p>
+                            <p style="font-size: 14px; color: var(--color-primario);">Subtotal: ${formatCurrency(subtotal)}</p>
+                        </div>
+                        <i class="fa-solid fa-trash-alt" style="color: var(--color-secundario); cursor: pointer;" onclick="removeItemFromCart(${item.id})"></i>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', itemHTML);
+            });
+            
+            totalElement.textContent = formatCurrency(totalPedido);
+        }
+
+        window.removeItemFromCart = function(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            saveCart();
+            renderCartItems();
+            updateCartBadge();
+            showToast("➖ Producto eliminado del carrito.");
+        }
+        
+        window.checkout = function() {
+            if (cart.length === 0) {
+                showToast("⚠️ Tu carrito está vacío. Añade productos primero.");
+                return;
+            }
+            
+            // 1. Cargar datos del perfil para la dirección
+            const userDataString = localStorage.getItem('userProfileData');
+            const userData = userDataString ? JSON.parse(userDataString) : null;
+
+            if (!userData) {
+                 showToast("⚠️ Debe registrar su perfil y dirección para finalizar la compra.");
+                 handleNavClick('profile'); // Redirigir a registro/perfil
+                 return;
+            }
+
+            let messageBody = "¡Hola! Quisiera realizar el siguiente pedido de la tienda en línea:\n\n";
+            let totalPedido = 0;
+
+            cart.forEach((item, index) => {
+                const subtotal = item.price * item.quantity;
+                totalPedido += subtotal;
+                messageBody += `${index + 1}. ${item.title} (x${item.quantity}) - ${formatCurrency(subtotal)}\n`;
+            });
+
+            messageBody += "\n----------------------------------\n";
+            messageBody += `TOTAL DEL PEDIDO: ${formatCurrency(totalPedido)}\n`;
+            
+            // 2. Adjuntar información de la dirección
+            messageBody += "\nDATOS DE ENTREGA REGISTRADOS:\n";
+            messageBody += `* Nombre Completo: ${userData.name || 'N/A'}\n`;
+            messageBody += `* Teléfono: ${userData.phone || 'N/A'}\n`;
+            messageBody += `* Email: ${userData.email}\n`;
+            messageBody += `* Departamento: ${userData.department}\n`;
+            messageBody += `* Municipio: ${userData.municipality}\n`;
+            messageBody += `* Dirección: C. ${userData.streetNumber || 'N/A'}, Col. ${userData.colonyName || 'N/A'}, Casa ${userData.houseColor || 'N/A'}\n`;
+            messageBody += `* Referencia: ${userData.detailedDescription || 'N/A'}\n`;
+            messageBody += "\nEspero confirmación, ¡gracias!";
+
+            const encodedMessage = encodeURIComponent(messageBody);
+            const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+            
+            // 3. Abrir la ventana de WhatsApp y limpiar
+            window.open(whatsappURL, '_blank');
+            clearCart();
+        }
+
+        function clearCart() {
+            cart = [];
+            saveCart();
+            renderCartItems();
+            updateCartBadge();
+        }
+
+
+        // --- 7. REGISTRO Y PERFIL ---
+        const registrationForm = document.getElementById('registration-form');
+
+        function saveUserData(event) {
+            event.preventDefault();
+            
+            // 1. Obtener campos obligatorios
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const name = document.getElementById('reg-name').value; 
+            const phone = document.getElementById('reg-phone').value; 
+            
+            // Campos de Dirección
+            const department = document.getElementById('reg-department').value;
+            const municipality = document.getElementById('reg-municipality').value;
+            const streetNumber = document.getElementById('reg-street').value;
+            const colonyName = document.getElementById('reg-colony').value;
+            const houseColor = document.getElementById('reg-color').value;
+            const detailedDescription = document.getElementById('reg-description').value;
+            
+            // 2. Validación de todos los campos
+            if (!email || !password || !name || !phone || !department || !municipality || !streetNumber || !colonyName || !houseColor || !detailedDescription) {
+                 showToast("⚠️ Por favor, complete todos los campos de contacto y dirección para registrarse. ¡Son obligatorios!");
+                 return;
+            }
+
+            const userData = { 
+                email, password, name, phone, 
+                department, municipality, streetNumber, 
+                colonyName, houseColor, detailedDescription
+            }; 
+            localStorage.setItem('userProfileData', JSON.stringify(userData));
+            
+            showProfilePage(userData);
+            showToast("🎉 ¡Registro exitoso y dirección de envío guardada!");
+        }
+
+        function showRegistrationForm() {
+            hideAllViews();
+            registrationView.style.display = 'block';
+        }
+
+        function showProfilePage(userData = null) {
+            hideAllViews();
+            profileView.style.display = 'block';
+            
+            let data = userData;
+            if (!data) {
+                const savedData = localStorage.getItem('userProfileData');
+                data = savedData ? JSON.parse(savedData) : null;
+            }
+            
+            const profileDetails = document.getElementById('profile-details');
+            
+            if (data) {
+                // Inyectar todos los datos, incluyendo Nombre y Teléfono
+                profileDetails.innerHTML = `
+                    <h3 style="margin-bottom: 5px; color: var(--color-primario);">Datos de Contacto</h3>
+                    <p><strong>Nombre Completo:</strong> ${data.name || 'N/A'}</p>
+                    <p><strong>Teléfono:</strong> ${data.phone || 'N/A'}</p>
+                    <p><strong>Correo:</strong> ${data.email}</p>
+                    
+                    <h3 style="margin-top: 20px; margin-bottom: 5px; color: var(--color-primario); border-top: 1px solid #333; padding-top: 10px;">Datos de Envío Guardados</h3>
+                    <p><strong>Departamento:</strong> ${data.department || 'N/A'}</p>
+                    <p><strong>Municipio:</strong> ${data.municipality || 'N/A'}</p>
+                    <p><strong>Colonia:</strong> ${data.colonyName || 'N/A'}</p>
+                    <p><strong>N° Calle/Pasaje:</strong> ${data.streetNumber || 'N/A'}</p>
+                    <p><strong>Color de Casa:</strong> ${data.houseColor || 'N/A'}</p>
+                    <p><strong>Referencia Detallada:</strong> ${data.detailedDescription || 'N/A'}</p>
+                `;
+            } else {
+                profileDetails.innerHTML = '<p style="color: var(--color-secundario);">No hay datos de perfil. Regístrese para guardar su dirección de envío.</p>';
+            }
+        }
+
+        window.logout = function() {
+            localStorage.removeItem('userProfileData');
+            handleNavClick('main'); 
+            showToast("👋 Sesión cerrada.");
+        }
+
+
+        // --- 8. INICIO DE LA APP ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCart(); 
+            loadRecentProducts(); 
+            filterByCategory('all', null, true); 
+            
+            if (registrationForm) {
+                 registrationForm.addEventListener('submit', saveUserData);
+            }
+            
+            // Listeners del Slider (Lógica circular)
+            sliderPrevBtn.addEventListener('click', () => {
+                const newIndex = currentImageIndex - 1;
+                showSliderImage(newIndex);
+            });
+
+            sliderNextBtn.addEventListener('click', () => {
+                const newIndex = currentImageIndex + 1;
+                showSliderImage(newIndex);
+            });
+
+            // Listener para el botón de retroceso de detalle
+            document.getElementById('back-to-main').addEventListener('click', () => {
+                handleNavClick('main');
+            });
+        });
+    </script>
+</body>
+</html>
