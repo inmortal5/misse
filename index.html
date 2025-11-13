@@ -641,7 +641,7 @@
         let recentProducts = []; 
         let cart = []; // Array que almacena los items del carrito {id, title, price, image, quantity}
         let currentProductId = null; 
-        const WHATSAPP_NUMBER = "50375573427"; 
+        const WHATSAPP_NUMBER = "50360527970"; 
         let currentCategoryFilter = 'all'; 
         let countdownInterval;
         let currentImageIndex = 0;
@@ -1169,7 +1169,7 @@
                  return;
             }
 
-            let messageBody = "¡Hola! Quisiera realizar el siguiente pedido de la tienda en línea:\n\n";
+            let messageBody = "# ¡Hola! Quisiera realizar el siguiente pedido de la tienda en línea:\n\n";
             let totalPedido = 0;
 
             cart.forEach((item, index) => {
@@ -1183,7 +1183,7 @@
             
             // 2. Adjuntar información de la dirección
             messageBody += "\nDATOS DE ENTREGA REGISTRADOS:\n";
-            messageBody += `* Nombre Completo: ${userData.name || 'N/A'}\n`;
+            messageBody += `*  Nombre Completo: ${userData.name || 'N/A'}\n`;
             messageBody += `* Teléfono: ${userData.phone || 'N/A'}\n`;
             messageBody += `* Email: ${userData.email}\n`;
             messageBody += `* Departamento: ${userData.department}\n`;
